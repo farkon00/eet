@@ -5,7 +5,7 @@ use std::io::BufReader;
 use std::fs::File;
 
 pub mod state;
-pub mod arithmetics;
+pub mod alu_instr;
 pub mod mov;
 pub mod special_instructions;
 
@@ -28,28 +28,28 @@ fn run_instruction(opcode: u8, state: &mut State) {
                 mov::mvi(opcode, state);
             }
             else if opcode & 0b11000110 == 0b00000100 { // 0 0 D D D 1 0 O where D D D - dst, O - is decrement
-                arithmetics::inr_dcr(opcode, state);
+                alu_instr::inr_dcr(opcode, state);
             }
             else if opcode & 0b11111000 == 0x80 { // 1 0 0 0 0 S S S where S S S - src to add
-                arithmetics::add(opcode, state);
+                alu_instr::add(opcode, state);
             }
             else if opcode & 0b11111000 == 0x88 { // 1 0 0 0 1 S S S where S S S - src to add
-                arithmetics::adc(opcode, state);
+                alu_instr::adc(opcode, state);
             }
             else if opcode & 0b11111000 == 0x90 { // 1 0 0 1 0 S S S where S S S - src to subtract
-                arithmetics::sub(opcode, state);
+                alu_instr::sub(opcode, state);
             }
             else if opcode & 0b11111000 == 0x98 { // 1 0 0 1 1 S S S where S S S - src to subtract
-                arithmetics::sbb(opcode, state);
+                alu_instr::sbb(opcode, state);
             }
             else if opcode & 0b11111000 == 0xA0 { // 1 0 1 0 0 S S S where S S S - src
-                arithmetics::ana(opcode, state);
+                alu_instr::ana(opcode, state);
             }
             else if opcode & 0b11111000 == 0xA8 { // 1 0 1 0 1 S S S where S S S - src
-                arithmetics::xra(opcode, state);
+                alu_instr::xra(opcode, state);
             }
             else if opcode & 0b11111000 == 0xB0 { // 1 0 1 1 0 S S S where S S S - src
-                arithmetics::ora(opcode, state);
+                alu_instr::ora(opcode, state);
             }
             else {
                 println!("Op code: {}", opcode);
