@@ -30,26 +30,29 @@ fn run_instruction(opcode: u8, state: &mut State) {
             else if opcode & 0b11000110 == 0b00000100 { // 0 0 D D D 1 0 O where D D D - dst, O - is decrement
                 alu_instr::inr_dcr(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x80 { // 1 0 0 0 0 S S S where S S S - src to add
+            else if opcode & 0b10111000 == 0x80 { // 1 I 0 0 0 S S S where S S S - src to add, I - is imidiate
                 alu_instr::add(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x88 { // 1 0 0 0 1 S S S where S S S - src to add
+            else if opcode & 0b10111000 == 0x88 { // 1 I 0 0 1 S S S where S S S - src to add, I - is imidiate
                 alu_instr::adc(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x90 { // 1 0 0 1 0 S S S where S S S - src to subtract
+            else if opcode & 0b10111000 == 0x90 { // 1 I 0 1 0 S S S where S S S - src to subtract, I - is imidiate
                 alu_instr::sub(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x98 { // 1 0 0 1 1 S S S where S S S - src to subtract
+            else if opcode & 0b10111000 == 0x98 { // 1 I 0 1 1 S S S where S S S - src to subtract, I - is imidiate
                 alu_instr::sbb(opcode, state);
             }
-            else if opcode & 0b11111000 == 0xA0 { // 1 0 1 0 0 S S S where S S S - src
+            else if opcode & 0b10111000 == 0xA0 { // 1 I 1 0 0 S S S where S S S - src, I - is imidiate
                 alu_instr::ana(opcode, state);
             }
-            else if opcode & 0b11111000 == 0xA8 { // 1 0 1 0 1 S S S where S S S - src
+            else if opcode & 0b10111000 == 0xA8 { // 1 I 1 0 1 S S S where S S S - src, I - is imidiate
                 alu_instr::xra(opcode, state);
             }
-            else if opcode & 0b11111000 == 0xB0 { // 1 0 1 1 0 S S S where S S S - src
+            else if opcode & 0b10111000 == 0xB0 { // 1 I 1 1 0 S S S where S S S - src, I - is imidiate
                 alu_instr::ora(opcode, state);
+            }
+            else if opcode & 0b10111000 == 0xB8 { // 1 I 1 1 1 S S S where S S S - src, I - is imidiate
+                alu_instr::cmp(opcode, state);
             }
             else {
                 println!("Op code: {}", opcode);
