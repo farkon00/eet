@@ -42,6 +42,15 @@ fn run_instruction(opcode: u8, state: &mut State) {
             else if opcode & 0b11111000 == 0x98 { // 1 0 0 1 1 S S S where S S S - src to subtract
                 arithmetics::sbb(opcode, state);
             }
+            else if opcode & 0b11111000 == 0xA0 { // 1 0 1 0 0 S S S where S S S - src
+                arithmetics::ana(opcode, state);
+            }
+            else if opcode & 0b11111000 == 0xA8 { // 1 0 1 0 1 S S S where S S S - src
+                arithmetics::xra(opcode, state);
+            }
+            else if opcode & 0b11111000 == 0xB0 { // 1 0 1 1 0 S S S where S S S - src
+                arithmetics::ora(opcode, state);
+            }
             else {
                 println!("Op code: {}", opcode);
                 panic!("Not implemented op code")

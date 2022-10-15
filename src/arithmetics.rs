@@ -55,3 +55,21 @@ pub fn sbb(opcode: u8, state: &mut State) {
     state.alu.carry = (reg + borrow) > state.regs.a;
     state.regs.a -= reg + borrow;
 }
+
+/// ANA r|M - And register or memory with A
+pub fn ana(opcode: u8, state: &mut State) {
+    let reg = get_arithm_oper_src(opcode, state);
+    state.regs.a = state.regs.a & reg;
+}
+
+/// XRA r|M - Xor register or memory with A
+pub fn xra(opcode: u8, state: &mut State) {
+    let reg = get_arithm_oper_src(opcode, state);
+    state.regs.a = state.regs.a ^ reg;
+}
+
+/// ORA r|M - Or register or memory with A
+pub fn ora(opcode: u8, state: &mut State) {
+    let reg = get_arithm_oper_src(opcode, state);
+    state.regs.a = state.regs.a | reg;
+}

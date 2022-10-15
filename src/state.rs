@@ -70,7 +70,7 @@ impl Registers {
             self.a, self.b, self.c, self.d, self.e, self.h, self.l
         ];
         for reg in regs {
-            let s = format!("{}", reg);
+            let s = format!("{}", reg as u8);
             print!("{}", s);
             print!("{}", " ".repeat(4 - s.len()));
         }
