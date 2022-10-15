@@ -1,3 +1,3 @@
 # eet
 
-__Eet__ is 8080 instruction set emulator
+__Eet__ is i8080 instruction set emulator.
