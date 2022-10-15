@@ -50,9 +50,9 @@ impl Registers {
         }
     }
 
-    // Ids in this one are internal for this emulator, not i8080 architecture
-    // BC - 0, DE - 1, HL - 2
-    // Returns value in little endian
+    /// Ids in this one are internal for this emulator, not i8080 architecture
+    /// BC - 0, DE - 1, HL - 2
+    /// Returns value in little endian
     pub fn get_pair(&self, id: i8) -> i16 {
         let (regh, regl) = match id {
             Registers::PAIR_B => (self.b, self.c),

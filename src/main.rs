@@ -5,6 +5,8 @@ use std::io::BufReader;
 use std::fs::File;
 
 pub mod state;
+pub mod arithmetics;
+pub mod mov;
 pub mod special_instructions;
 
 use state::*;
@@ -19,84 +21,26 @@ fn run_instruction(opcode: i8, state: &mut State) {
     match static_instr.get(&opcode) {
         Some(func) => func(state),
         None => {
-            // MOV - Move reg | mem, reg | mem
             if opcode & 0b11000000 == 0x40 { // 0 1 D D D S S S where D D D - dst, S S S - src
-                let src_code = opcode & 0b00000111;
-                let src = if src_code == 6 { // Memory
-                    state.memory[state.regs.get_pair(Registers::PAIR_H) as u8 as usize]
-                }
-                else { // Register
-                    state.regs.get_by_id(src_code)
-                };
-
-                let dst_code = (opcode & 0b00111000) >> 3;
-                let dst = if dst_code == 6 {
-                    &mut state.memory[state.regs.get_pair(Registers::PAIR_H) as u8 as usize]
-                }
-                else {
-                    state.regs.get_ref_by_id(dst_code)
-                };
-
-                if dst_code == 6 && src_code == 6 {
-                    panic!("Memory to memory move not allowed")
-                }
-
-                *dst = src;
+                mov::mov(opcode, state);
             }
-            // MVI - Move imidiate, reg | mem
             else if opcode & 0b11000111 == 0b00000110 { // 0 1 D D D 1 1 0 where D D D - dst
-                let imidiate = state.memory[state.regs.pc as usize];
-                state.regs.pc += 1;
-                let dst_code = (opcode & 0b00111000) >> 3;
-                if dst_code == 6 { // Memory
-                    let mem_dst = state.regs.get_pair(Registers::PAIR_H);
-                    state.memory[mem_dst as u8 as usize] = imidiate;
-                }
-                else { // Reg
-                    let reg_dst = state.regs.get_ref_by_id(dst_code);
-                    *reg_dst = imidiate;
-                }
+                mov::mvi(opcode, state);
             }
-            // INR, DCR - Increment or decrement reg | mem
             else if opcode & 0b11000110 == 0b00000100 { // 0 0 D D D 1 0 O where D D D - dst, O - is decrement
-                let dst_code = (opcode & 0b00111000) >> 3;
-                let oper = if opcode & 0b00000001 == 0 {1} else {-1};
-                if dst_code == 6 { // Memory
-                    let mem_dst = state.regs.get_pair(Registers::PAIR_H);
-                    state.memory[mem_dst as u8 as usize] += oper;
-                    state.alu.carry = !(state.memory[mem_dst as u8 as usize].checked_add(oper).is_none());
-                }
-                else { // Reg
-                    let reg_dst = state.regs.get_ref_by_id(dst_code);
-                    *reg_dst += oper;
-                    state.alu.carry = !(reg_dst.checked_add(oper).is_none());
-                }
+                arithmetics::inr_dcr(opcode, state);
             }
-            // ADD r - Add r to A
             else if opcode & 0b11111000 == 0x80 { // 1 0 0 0 0 S S S where S S S - register to add
-                let reg = state.regs.get_by_id(opcode & 7);
-                state.alu.carry = state.regs.a.checked_add(reg).is_none();
-                state.regs.a += reg;
+                arithmetics::add(opcode, state);
             }
-            // ADC r - Add r and carry to A
             else if opcode & 0b11111000 == 0x88 { // 1 0 0 0 1 S S S where S S S - register to add
-                let reg = state.regs.get_by_id(opcode & 7);
-                let carry = state.alu.carry as i8;
-                state.alu.carry = state.regs.a.checked_add(reg + carry).is_none();
-                state.regs.a += reg + carry;
+                arithmetics::adc(opcode, state);
             }
-            // SUB r - Subtract r from A
             else if opcode & 0b11111000 == 0x90 { // 1 0 0 1 0 S S S where S S S - register to subtract
-                let reg = state.regs.get_by_id(opcode & 7);
-                state.alu.carry = reg > state.regs.a;
-                state.regs.a -= reg;
+                arithmetics::sub(opcode, state);
             }
-            // SBB r - Subtract r and borrow from to A
             else if opcode & 0b11111000 == 0x98 { // 1 0 0 1 1 S S S where S S S - register to subtract
-                let reg = state.regs.get_by_id(opcode & 7);
-                let borrow = state.alu.carry as i8;
-                state.alu.carry = (reg + borrow) > state.regs.a;
-                state.regs.a -= reg + borrow;
+                arithmetics::sbb(opcode, state);
             }
             else {
                 println!("Op code: {}", opcode);
