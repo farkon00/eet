@@ -20,6 +20,10 @@ pub struct Registers {
 }
 
 impl Registers {
+    pub const PAIR_B: i8 = 0;
+    pub const PAIR_D: i8 = 1;
+    pub const PAIR_H: i8 = 2;
+
     pub fn get_ref_by_id<'a>(&'a mut self, id: i8) -> &'a mut i8 {
         match id {
             7 => &mut self.a,
@@ -44,6 +48,19 @@ impl Registers {
             7 => self.a,
             _ => panic!("Invalid register id")
         }
+    }
+
+    // Ids in this one are internal for this emulator, not i8080 architecture
+    // BC - 0, DE - 1, HL - 2
+    // Returns value in little endian
+    pub fn get_pair(&self, id: i8) -> i16 {
+        let (regh, regl) = match id {
+            Registers::PAIR_B => (self.b, self.c),
+            Registers::PAIR_D => (self.d, self.e),
+            Registers::PAIR_H => (self.h, self.l),
+            _ => panic!("Invalid internal id of a pair")
+        };
+        ((regl as i16) << 8) | (regh as i16)
     }
 
     pub fn print(&self) {
