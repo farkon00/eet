@@ -1,7 +1,7 @@
 use super::state::*;
 
 /// MOV - Move reg | mem, reg | mem
-pub fn mov(opcode: i8, state: &mut State) {
+pub fn mov(opcode: u8, state: &mut State) {
     let src_code = opcode & 0b00000111;
     let src = if src_code == 6 { // Memory
         state.memory[state.regs.get_pair(Registers::PAIR_H) as u8 as usize]
@@ -26,7 +26,7 @@ pub fn mov(opcode: i8, state: &mut State) {
 }
 
 /// MVI - Move imidiate, reg | mem
-pub fn mvi(opcode: i8, state: &mut State) {
+pub fn mvi(opcode: u8, state: &mut State) {
     let imidiate = state.memory[state.regs.pc as usize];
     state.regs.pc += 1;
     let dst_code = (opcode & 0b00111000) >> 3;

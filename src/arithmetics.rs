@@ -1,7 +1,7 @@
 use super::state::*;
 
 /// INR, DCR - Increment or decrement reg | mem
-pub fn inr_dcr(opcode: i8, state: &mut State) {
+pub fn inr_dcr(opcode: u8, state: &mut State) {
     let dst_code = (opcode & 0b00111000) >> 3;
     let oper = if opcode & 0b00000001 == 0 {1} else {-1};
     if dst_code == 6 { // Memory
@@ -16,31 +16,41 @@ pub fn inr_dcr(opcode: i8, state: &mut State) {
     }
 } 
 
-/// ADD r - Add r to A
-pub fn add(opcode: i8, state: &mut State) {
-    let reg = state.regs.get_by_id(opcode & 7);
+fn get_arithm_oper_src(opcode: u8, state: &State) -> i8 {
+    let code = opcode & 0b111;
+    if code == 6 { // Memory
+        state.memory[state.regs.get_pair(Registers::PAIR_H) as u8 as usize]
+    }
+    else {
+        state.regs.get_by_id(code)
+    }
+}
+
+/// ADD r|M - Add register or memory to A
+pub fn add(opcode: u8, state: &mut State) {
+    let reg = get_arithm_oper_src(opcode, state);
     state.alu.carry = state.regs.a.checked_add(reg).is_none();
     state.regs.a += reg;
 }
 
-/// ADC r - Add r and carry to A
-pub fn adc(opcode: i8, state: &mut State) {
-    let reg = state.regs.get_by_id(opcode & 7);
+/// ADC r| - Add register or memory and carry to A
+pub fn adc(opcode: u8, state: &mut State) {
+    let reg = get_arithm_oper_src(opcode, state);
     let carry = state.alu.carry as i8;
     state.alu.carry = state.regs.a.checked_add(reg + carry).is_none();
     state.regs.a += reg + carry;
 } 
 
-/// SUB r - Subtract r from A
-pub fn sub(opcode: i8, state: &mut State) {
-    let reg = state.regs.get_by_id(opcode & 7);
+/// SUB r|M - Subtract register or memory from A
+pub fn sub(opcode: u8, state: &mut State) {
+    let reg = get_arithm_oper_src(opcode, state);
     state.alu.carry = reg > state.regs.a;
     state.regs.a -= reg;
 } 
 
-/// SBB r - Subtract r and borrow from A
-pub fn sbb(opcode: i8, state: &mut State) {
-    let reg = state.regs.get_by_id(opcode & 7);
+/// SBB r|M - Subtract register or memory and borrow from A
+pub fn sbb(opcode: u8, state: &mut State) {
+    let reg = get_arithm_oper_src(opcode, state);
     let borrow = state.alu.carry as i8;
     state.alu.carry = (reg + borrow) > state.regs.a;
     state.regs.a -= reg + borrow;

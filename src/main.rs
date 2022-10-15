@@ -11,12 +11,12 @@ pub mod special_instructions;
 
 use state::*;
 
-const STATIC_INSTRUCTIONS: [(i8, fn(&mut State)); 1] = [
+const STATIC_INSTRUCTIONS: [(u8, fn(&mut State)); 1] = [
     (0x76, special_instructions::halt as fn(&mut State))
 ];
 const DEBUG: bool = false;
 
-fn run_instruction(opcode: i8, state: &mut State) {
+fn run_instruction(opcode: u8, state: &mut State) {
     let static_instr = HashMap::from(STATIC_INSTRUCTIONS);
     match static_instr.get(&opcode) {
         Some(func) => func(state),
@@ -30,16 +30,16 @@ fn run_instruction(opcode: i8, state: &mut State) {
             else if opcode & 0b11000110 == 0b00000100 { // 0 0 D D D 1 0 O where D D D - dst, O - is decrement
                 arithmetics::inr_dcr(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x80 { // 1 0 0 0 0 S S S where S S S - register to add
+            else if opcode & 0b11111000 == 0x80 { // 1 0 0 0 0 S S S where S S S - src to add
                 arithmetics::add(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x88 { // 1 0 0 0 1 S S S where S S S - register to add
+            else if opcode & 0b11111000 == 0x88 { // 1 0 0 0 1 S S S where S S S - src to add
                 arithmetics::adc(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x90 { // 1 0 0 1 0 S S S where S S S - register to subtract
+            else if opcode & 0b11111000 == 0x90 { // 1 0 0 1 0 S S S where S S S - src to subtract
                 arithmetics::sub(opcode, state);
             }
-            else if opcode & 0b11111000 == 0x98 { // 1 0 0 1 1 S S S where S S S - register to subtract
+            else if opcode & 0b11111000 == 0x98 { // 1 0 0 1 1 S S S where S S S - src to subtract
                 arithmetics::sbb(opcode, state);
             }
             else {
@@ -80,7 +80,7 @@ fn main() {
 
     loop {
         state.regs.pc += 1;
-        run_instruction(state.memory[(state.regs.pc-1) as usize], &mut state);
+        run_instruction(state.memory[(state.regs.pc-1) as usize] as u8, &mut state);
         if DEBUG {
             state.regs.print();
             state.alu.print_flags();

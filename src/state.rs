@@ -24,7 +24,7 @@ impl Registers {
     pub const PAIR_D: i8 = 1;
     pub const PAIR_H: i8 = 2;
 
-    pub fn get_ref_by_id<'a>(&'a mut self, id: i8) -> &'a mut i8 {
+    pub fn get_ref_by_id<'a>(&'a mut self, id: u8) -> &'a mut i8 {
         match id {
             7 => &mut self.a,
             0 => &mut self.b,
@@ -37,7 +37,7 @@ impl Registers {
         }
     } 
 
-    pub fn get_by_id(&self, id: i8) -> i8 {
+    pub fn get_by_id(&self, id: u8) -> i8 {
         match id {
             0 => self.b,
             1 => self.c,
