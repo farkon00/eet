@@ -64,13 +64,17 @@ impl Registers {
     }
 
     pub fn print(&self) {
-        println!("Reg A: {}", self.a);
-        println!("Reg B: {}", self.b);
-        println!("Reg C: {}", self.c);
-        println!("Reg D: {}", self.d);
-        println!("Reg E: {}", self.e);
-        println!("Reg H: {}", self.h);
-        println!("Reg L: {}", self.l);
+        println!("");
+        println!("A   B   C   D   E   H   L");
+        let regs: [i8;7] = [
+            self.a, self.b, self.c, self.d, self.e, self.h, self.l
+        ];
+        for reg in regs {
+            let s = format!("{}", reg);
+            print!("{}", s);
+            print!("{}", " ".repeat(4 - s.len()));
+        }
+        println!("");
     }
 }
 
@@ -83,4 +87,17 @@ pub struct Alu {
     pub sign: bool,
     pub parity: bool,
     pub acarry: bool
+}
+
+impl Alu {
+    pub fn print_flags(&self) {
+        println!("Zero   Carry  Sign   Parity ACarry");
+        let flags: [bool;5] = [
+            self.zero, self.carry, self.sign, self.parity, self.acarry
+        ];
+        for flag in flags {
+            print!("{}      ", (flag as u8));
+        }
+        println!("");
+    }
 }

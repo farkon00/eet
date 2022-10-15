@@ -44,7 +44,7 @@ fn run_instruction(opcode: i8, state: &mut State) {
                 *dst = src;
             }
             // MVI - Move imidiate, reg | mem
-            else if opcode & 0b11000110 == 0b00000110 { // 0 1 D D D 1 1 0 where D D D - dst
+            else if opcode & 0b11000111 == 0b00000110 { // 0 1 D D D 1 1 0 where D D D - dst
                 let imidiate = state.memory[state.regs.pc as usize];
                 state.regs.pc += 1;
                 let dst_code = (opcode & 0b00111000) >> 3;
@@ -56,6 +56,47 @@ fn run_instruction(opcode: i8, state: &mut State) {
                     let reg_dst = state.regs.get_ref_by_id(dst_code);
                     *reg_dst = imidiate;
                 }
+            }
+            // INR, DCR - Increment or decrement reg | mem
+            else if opcode & 0b11000110 == 0b00000100 { // 0 0 D D D 1 0 O where D D D - dst, O - is decrement
+                let dst_code = (opcode & 0b00111000) >> 3;
+                let oper = if opcode & 0b00000001 == 0 {1} else {-1};
+                if dst_code == 6 { // Memory
+                    let mem_dst = state.regs.get_pair(Registers::PAIR_H);
+                    state.memory[mem_dst as u8 as usize] += oper;
+                    state.alu.carry = !(state.memory[mem_dst as u8 as usize].checked_add(oper).is_none());
+                }
+                else { // Reg
+                    let reg_dst = state.regs.get_ref_by_id(dst_code);
+                    *reg_dst += oper;
+                    state.alu.carry = !(reg_dst.checked_add(oper).is_none());
+                }
+            }
+            // ADD r - Add r to A
+            else if opcode & 0b11111000 == 0x80 { // 1 0 0 0 0 S S S where S S S - register to add
+                let reg = state.regs.get_by_id(opcode & 7);
+                state.alu.carry = state.regs.a.checked_add(reg).is_none();
+                state.regs.a += reg;
+            }
+            // ADC r - Add r and carry to A
+            else if opcode & 0b11111000 == 0x88 { // 1 0 0 0 1 S S S where S S S - register to add
+                let reg = state.regs.get_by_id(opcode & 7);
+                let carry = state.alu.carry as i8;
+                state.alu.carry = state.regs.a.checked_add(reg + carry).is_none();
+                state.regs.a += reg + carry;
+            }
+            // SUB r - Subtract r from A
+            else if opcode & 0b11111000 == 0x90 { // 1 0 0 1 0 S S S where S S S - register to subtract
+                let reg = state.regs.get_by_id(opcode & 7);
+                state.alu.carry = reg > state.regs.a;
+                state.regs.a -= reg;
+            }
+            // SBB r - Subtract r and borrow from to A
+            else if opcode & 0b11111000 == 0x98 { // 1 0 0 1 1 S S S where S S S - register to subtract
+                let reg = state.regs.get_by_id(opcode & 7);
+                let borrow = state.alu.carry as i8;
+                state.alu.carry = (reg + borrow) > state.regs.a;
+                state.regs.a -= reg + borrow;
             }
             else {
                 println!("Op code: {}", opcode);
@@ -96,6 +137,9 @@ fn main() {
     loop {
         state.regs.pc += 1;
         run_instruction(state.memory[(state.regs.pc-1) as usize], &mut state);
-        if DEBUG {state.regs.print();}
+        if DEBUG {
+            state.regs.print();
+            state.alu.print_flags();
+        }
     }
 }
